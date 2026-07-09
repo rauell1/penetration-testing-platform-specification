@@ -29,7 +29,7 @@ export default async function SpecSectionPage({
         actions={
           <Link
             href="/spec"
-            className="rounded-md border border-slate-700 hover:border-slate-500 text-slate-200 px-3.5 py-2 text-sm"
+            className="rounded-md border border-zinc-700 hover:border-zinc-500 text-zinc-200 px-3.5 py-2 text-sm"
           >
             ← All sections
           </Link>
@@ -44,12 +44,12 @@ export default async function SpecSectionPage({
           {prev ? (
             <Link
               href={`/spec/${prev.slug}`}
-              className="rounded-lg border border-slate-800 hover:border-sky-500/40 p-4 bg-[#0a0f1c]/60 transition"
+              className="rounded-lg border border-zinc-800 hover:border-emerald-500/40 p-4 bg-zinc-900/40 transition"
             >
-              <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500 font-semibold">
                 ← Previous
               </div>
-              <div className="text-slate-200 font-semibold">
+              <div className="text-zinc-200 font-semibold">
                 {prev.number}. {prev.title}
               </div>
             </Link>
@@ -59,12 +59,12 @@ export default async function SpecSectionPage({
           {next ? (
             <Link
               href={`/spec/${next.slug}`}
-              className="rounded-lg border border-slate-800 hover:border-sky-500/40 p-4 bg-[#0a0f1c]/60 transition md:text-right"
+              className="rounded-lg border border-zinc-800 hover:border-emerald-500/40 p-4 bg-zinc-900/40 transition md:text-right"
             >
-              <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500 font-semibold">
                 Next →
               </div>
-              <div className="text-slate-200 font-semibold">
+              <div className="text-zinc-200 font-semibold">
                 {next.number}. {next.title}
               </div>
             </Link>

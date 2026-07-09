@@ -406,7 +406,7 @@ create policy findings_tenant_isolation on findings
         <h2>Layer 4 — audit tripwires</h2>
         <p>
           A trigger on <Code>findings</Code> fires an alert if a row is read
-          with <Code>current_setting('app.current_org')</Code> null. This has
+          with <Code>{"current_setting('app.current_org')"}</Code> null. This has
           never fired in normal operation; if it fires we page.
         </p>
       </>
@@ -518,7 +518,7 @@ returning *;`}</Pre>
         </p>
         <h2>Cancellation</h2>
         <p>
-          Cancel writes <Code>scan_runs.status='cancelled'</Code> and inserts a
+          Cancel writes <Code>{"scan_runs.status='cancelled'"}</Code> and inserts a
           cancellation event. Workers poll their run status every N seconds
           (cheap, indexed) and abort at the next safe checkpoint. The HTTP
           wrapper is the primary checkpoint — every outbound request re-checks
@@ -828,7 +828,7 @@ interface AdapterCtx {
         <ul>
           <li>No inbound ports</li>
           <li>Egress restricted to a per-run allowlist of resolved IPs (from the target_resolution stage)</li>
-          <li>No access to Postgres — reports back only via the orchestrator's signed callback</li>
+          <li>No access to Postgres — reports back only via the orchestrator&apos;s signed callback</li>
         </ul>
       </>
     ),

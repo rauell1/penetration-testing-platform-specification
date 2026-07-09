@@ -30,20 +30,20 @@ export default async function AuditPage() {
       />
       <div className="max-w-6xl mx-auto px-6 lg:px-10 py-8">
         <SectionCard>
-          <ul className="divide-y divide-slate-800/60">
+          <ul className="divide-y divide-zinc-800/60">
             {rows.map((r) => (
-              <li
+               <li
                 key={r.id}
                 className="py-3 flex items-center gap-3 text-sm"
               >
                 <Pill tone={toneFor(r.action)}>{r.action}</Pill>
                 {r.targetType && (
-                  <span className="text-slate-400 text-xs">
+                  <span className="text-zinc-400 text-xs">
                     {r.targetType}:{" "}
                     <code>{r.targetId?.slice(0, 8) ?? "—"}</code>
                   </span>
                 )}
-                <span className="ml-auto text-[11px] text-slate-500 tabular-nums">
+                <span className="ml-auto text-[11px] text-zinc-500 tabular-nums">
                   {new Date(r.createdAt).toISOString().replace("T", " ").slice(0, 19)}
                 </span>
               </li>

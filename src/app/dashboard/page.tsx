@@ -71,13 +71,13 @@ export default async function DashboardPage() {
           <>
             <Link
               href="/scans"
-              className="rounded-md border border-slate-700 hover:border-slate-500 text-slate-200 px-3.5 py-2 text-sm"
+              className="rounded-md border border-zinc-700 hover:border-zinc-500 text-zinc-200 px-3.5 py-2 text-sm"
             >
               All scan runs
             </Link>
             <Link
               href="/findings"
-              className="rounded-md bg-sky-500 hover:bg-sky-400 text-slate-900 font-semibold px-3.5 py-2 text-sm"
+              className="rounded-md bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold px-3.5 py-2 text-sm glow"
             >
               Browse findings →
             </Link>
@@ -118,13 +118,13 @@ export default async function DashboardPage() {
                     <div className="w-20">
                       <SeverityChip severity={s} />
                     </div>
-                    <div className="flex-1 h-2 rounded-full bg-slate-800 overflow-hidden">
+                    <div className="flex-1 h-2 rounded-full bg-zinc-800 overflow-hidden">
                       <div
                         className={`h-full ${barColor(s)}`}
                         style={{ width: `${width}%` }}
                       />
                     </div>
-                    <div className="w-8 text-right text-slate-400 tabular-nums">
+                    <div className="w-8 text-right text-zinc-400 tabular-nums">
                       {count}
                     </div>
                   </div>
@@ -135,23 +135,23 @@ export default async function DashboardPage() {
 
           <SectionCard title="Recent scan runs">
             {runsList.length === 0 && (
-              <p className="text-sm text-slate-400">No scans yet.</p>
+              <p className="text-sm text-zinc-400">No scans yet.</p>
             )}
             <ul className="space-y-3">
               {runsList.map((r) => (
                 <li
                   key={r.id}
-                  className="flex items-center gap-3 text-sm border-b border-slate-800/60 pb-3 last:border-0 last:pb-0"
+                  className="flex items-center gap-3 text-sm border-b border-zinc-800/60 pb-3 last:border-0 last:pb-0"
                 >
                   <RunStatusBadge status={r.status as ScanRunStatus} />
                   <div className="min-w-0 flex-1">
                     <Link
                       href={`/scans/${r.id}`}
-                      className="text-slate-200 hover:text-sky-300 truncate block"
+                      className="text-zinc-200 hover:text-emerald-400 truncate block"
                     >
                       {r.id.slice(0, 8)}
                     </Link>
-                    <div className="text-[11px] text-slate-500">
+                    <div className="text-[11px] text-zinc-500">
                       {r.finishedAt
                         ? new Date(r.finishedAt).toLocaleString()
                         : "in progress"}
@@ -166,7 +166,7 @@ export default async function DashboardPage() {
         <SectionCard title="Targets in this org">
           <div className="overflow-x-auto -mx-5">
             <table className="w-full text-sm">
-              <thead className="text-[10px] uppercase tracking-widest text-slate-500">
+              <thead className="text-[10px] uppercase tracking-widest text-zinc-500">
                 <tr>
                   <th className="text-left px-5 py-2">Label</th>
                   <th className="text-left px-5 py-2">Host</th>
@@ -179,17 +179,17 @@ export default async function DashboardPage() {
                 {targetsList.map((t) => (
                   <tr
                     key={t.id}
-                    className="border-t border-slate-800/60 hover:bg-slate-800/20"
+                    className="border-t border-zinc-800/60 hover:bg-zinc-800/20"
                   >
                     <td className="px-5 py-2">
                       <Link
                         href={`/targets/${t.id}`}
-                        className="text-slate-200 hover:text-sky-300"
+                        className="text-zinc-200 hover:text-emerald-400"
                       >
                         {t.label}
                       </Link>
                     </td>
-                    <td className="px-5 py-2 text-slate-400 font-mono text-xs">
+                    <td className="px-5 py-2 text-zinc-400 font-mono text-xs">
                       {t.primaryHost}
                     </td>
                     <td className="px-5 py-2">
@@ -202,7 +202,7 @@ export default async function DashboardPage() {
                         <Pill tone="slate">passive-only</Pill>
                       )}
                     </td>
-                    <td className="px-5 py-2 text-slate-500 text-xs">
+                    <td className="px-5 py-2 text-zinc-500 text-xs">
                       {new Date(t.createdAt).toLocaleDateString()}
                     </td>
                   </tr>
@@ -227,6 +227,6 @@ function barColor(s: Severity): string {
     case "low":
       return "bg-emerald-500";
     default:
-      return "bg-slate-600";
+      return "bg-zinc-600";
   }
 }

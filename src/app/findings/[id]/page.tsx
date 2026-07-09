@@ -35,7 +35,7 @@ export default async function FindingDetail({
             <StateBadge state={f.state as FindingState} />
             <Link
               href="/findings"
-              className="rounded-md border border-slate-700 hover:border-slate-500 text-slate-200 px-3.5 py-2 text-sm"
+              className="rounded-md border border-zinc-700 hover:border-zinc-500 text-zinc-200 px-3.5 py-2 text-sm"
             >
               ← All findings
             </Link>
@@ -45,7 +45,7 @@ export default async function FindingDetail({
       <div className="max-w-6xl mx-auto px-6 lg:px-10 py-8 grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <SectionCard title="Remediation">
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <p className="text-sm text-zinc-300 leading-relaxed">
               {f.remediation ?? "—"}
             </p>
           </SectionCard>
@@ -55,11 +55,11 @@ export default async function FindingDetail({
               {instances.map((i) => (
                 <li
                   key={i.id}
-                  className="border-b border-slate-800/60 pb-3 last:border-0 last:pb-0 text-sm"
+                  className="border-b border-zinc-800/60 pb-3 last:border-0 last:pb-0 text-sm"
                 >
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <Pill tone="violet">{i.scannerProvenance}</Pill>
-                    <code className="text-xs text-slate-400">
+                    <code className="text-xs text-zinc-400">
                       {i.method} {i.host}
                       {i.path}
                     </code>
@@ -69,11 +69,11 @@ export default async function FindingDetail({
                       </span>
                     )}
                   </div>
-                  <div className="text-[11px] text-slate-500">
+                  <div className="text-[11px] text-zinc-500">
                     Seen in run{" "}
                     <Link
                       href={`/scans/${i.scanRunId}`}
-                      className="text-sky-400 hover:underline font-mono"
+                      className="text-emerald-400 hover:underline font-mono"
                     >
                       {i.scanRunId.slice(0, 8)}
                     </Link>{" "}
@@ -85,8 +85,8 @@ export default async function FindingDetail({
           </SectionCard>
 
           <SectionCard title="Fingerprint" eyebrow="Stable dedup key">
-            <code className="text-xs text-sky-300 break-all">{f.fingerprint}</code>
-            <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+            <code className="text-xs text-emerald-400 break-all">{f.fingerprint}</code>
+            <p className="text-xs text-zinc-500 mt-2 leading-relaxed">
               This fingerprint stays constant across scanner adapters and across
               scan runs. Two adapters that both flag this issue produce two
               <em> instances</em> under one <em>finding</em>. When a later run
@@ -103,10 +103,10 @@ export default async function FindingDetail({
                 <Pill tone="slate">{f.category}</Pill>
               </Row>
               <Row label="WSTG">
-                <code className="text-slate-300">{f.wstgId ?? "—"}</code>
+                <code className="text-zinc-300">{f.wstgId ?? "—"}</code>
               </Row>
               <Row label="CWE">
-                <code className="text-slate-300">{f.cwe ?? "—"}</code>
+                <code className="text-zinc-300">{f.cwe ?? "—"}</code>
               </Row>
               <Row label="Confidence">
                 <Pill
@@ -114,7 +114,7 @@ export default async function FindingDetail({
                     f.confidence === "certain"
                       ? "emerald"
                       : f.confidence === "firm"
-                        ? "sky"
+                        ? "emerald"
                         : "amber"
                   }
                 >
@@ -122,12 +122,12 @@ export default async function FindingDetail({
                 </Pill>
               </Row>
               <Row label="First seen">
-                <span className="text-slate-300 text-xs">
+                <span className="text-zinc-300 text-xs">
                   {new Date(f.firstSeenAt).toLocaleDateString()}
                 </span>
               </Row>
               <Row label="Last seen">
-                <span className="text-slate-300 text-xs">
+                <span className="text-zinc-300 text-xs">
                   {new Date(f.lastSeenAt).toLocaleDateString()}
                 </span>
               </Row>
@@ -135,7 +135,7 @@ export default async function FindingDetail({
           </SectionCard>
           <SectionCard title="References">
             {(f.references as string[]).length === 0 ? (
-              <p className="text-xs text-slate-500">None.</p>
+              <p className="text-xs text-zinc-500">None.</p>
             ) : (
               <ul className="space-y-1 text-xs">
                 {(f.references as string[]).map((r) => (
@@ -144,7 +144,7 @@ export default async function FindingDetail({
                       href={r}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-sky-400 hover:underline break-all"
+                      className="text-emerald-400 hover:underline break-all"
                     >
                       {r}
                     </a>
@@ -168,7 +168,7 @@ function Row({
 }) {
   return (
     <div className="flex gap-3 items-baseline">
-      <div className="w-24 shrink-0 text-[10px] uppercase tracking-widest text-slate-500 font-semibold">
+      <div className="w-24 shrink-0 text-[10px] uppercase tracking-widest text-zinc-500 font-semibold">
         {label}
       </div>
       <div className="min-w-0">{children}</div>

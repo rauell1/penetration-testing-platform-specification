@@ -45,10 +45,10 @@ export default async function TargetsPage() {
               <div className="grid md:grid-cols-2 gap-6 text-sm">
                 <div className="space-y-2">
                   <Row label="Primary host">
-                    <code className="text-sky-300">{t.primaryHost}</code>
+                    <code className="text-emerald-400">{t.primaryHost}</code>
                   </Row>
                   <Row label="Base URL">
-                    <code className="text-slate-300">{t.baseUrl}</code>
+                    <code className="text-zinc-300">{t.baseUrl}</code>
                   </Row>
                   <Row label="Kind">
                     <Pill tone="sky">{t.kind}</Pill>
@@ -62,12 +62,12 @@ export default async function TargetsPage() {
                   </Row>
                   {t.description && (
                     <Row label="Description">
-                      <span className="text-slate-300">{t.description}</span>
+                      <span className="text-zinc-300">{t.description}</span>
                     </Row>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 font-semibold">
                     Ownership verification
                   </div>
                   {v ? (
@@ -76,14 +76,14 @@ export default async function TargetsPage() {
                         <Pill tone="emerald">
                           {v.status === "verified" ? "verified" : v.status}
                         </Pill>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-zinc-400">
                           {v.type.replace("_", " ")}
                         </span>
                       </div>
-                      <div className="font-mono text-xs text-slate-300 break-all">
+                      <div className="font-mono text-xs text-zinc-300 break-all">
                         {v.challenge}
                       </div>
-                      <div className="text-[11px] text-slate-500 mt-2">
+                      <div className="text-[11px] text-zinc-500 mt-2">
                         Verified{" "}
                         {v.verifiedAt
                           ? new Date(v.verifiedAt).toLocaleDateString()
@@ -101,7 +101,7 @@ export default async function TargetsPage() {
                   )}
                   <Link
                     href={`/targets/${t.id}`}
-                    className="inline-block text-xs text-sky-400 hover:underline mt-1"
+                    className="inline-block text-xs text-emerald-400 hover:underline mt-1"
                   >
                     Open target detail →
                   </Link>
@@ -124,7 +124,7 @@ function Row({
 }) {
   return (
     <div className="flex gap-3 items-baseline">
-      <div className="w-28 shrink-0 text-[10px] uppercase tracking-widest text-slate-500 font-semibold">
+      <div className="w-28 shrink-0 text-[10px] uppercase tracking-widest text-zinc-500 font-semibold">
         {label}
       </div>
       <div className="min-w-0">{children}</div>

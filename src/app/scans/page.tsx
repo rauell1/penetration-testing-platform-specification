@@ -38,7 +38,7 @@ export default async function ScansPage() {
         <SectionCard>
           <div className="overflow-x-auto -mx-5">
             <table className="w-full text-sm">
-              <thead className="text-[10px] uppercase tracking-widest text-slate-500">
+              <thead className="text-[10px] uppercase tracking-widest text-zinc-500">
                 <tr>
                   <th className="text-left px-5 py-2">Run</th>
                   <th className="text-left px-5 py-2">Target</th>
@@ -60,32 +60,32 @@ export default async function ScansPage() {
                   return (
                     <tr
                       key={r.id}
-                      className="border-t border-slate-800/60 hover:bg-slate-800/20"
+                      className="border-t border-zinc-800/60 hover:bg-zinc-800/20"
                     >
                       <td className="px-5 py-2">
                         <Link
                           href={`/scans/${r.id}`}
-                          className="text-sky-300 hover:underline font-mono text-xs"
+                          className="text-emerald-400 hover:underline font-mono text-xs"
                         >
                           {r.id.slice(0, 8)}
                         </Link>
                       </td>
-                      <td className="px-5 py-2 text-slate-300">
+                      <td className="px-5 py-2 text-zinc-300">
                         {t?.label ?? "—"}
                       </td>
                       <td className="px-5 py-2">
                         <RunStatusBadge status={r.status as ScanRunStatus} />
                       </td>
-                      <td className="px-5 py-2 text-right tabular-nums text-slate-300">
+                      <td className="px-5 py-2 text-right tabular-nums text-zinc-300">
                         {stats?.pages ?? "—"}
                       </td>
-                      <td className="px-5 py-2 text-right tabular-nums text-slate-300">
+                      <td className="px-5 py-2 text-right tabular-nums text-zinc-300">
                         {stats?.requests ?? "—"}
                       </td>
-                      <td className="px-5 py-2 text-right tabular-nums text-slate-100 font-semibold">
+                      <td className="px-5 py-2 text-right tabular-nums text-zinc-100 font-semibold">
                         {stats?.findings ?? "—"}
                       </td>
-                      <td className="px-5 py-2 text-slate-500 text-xs">
+                      <td className="px-5 py-2 text-zinc-500 text-xs">
                         {r.finishedAt
                           ? new Date(r.finishedAt).toLocaleString()
                           : "—"}

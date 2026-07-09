@@ -38,7 +38,7 @@ export default async function FindingsPage() {
         <SectionCard>
           <div className="overflow-x-auto -mx-5">
             <table className="w-full text-sm">
-              <thead className="text-[10px] uppercase tracking-widest text-slate-500">
+              <thead className="text-[10px] uppercase tracking-widest text-zinc-500">
                 <tr>
                   <th className="text-left px-5 py-2">Sev</th>
                   <th className="text-left px-5 py-2">Title</th>
@@ -52,7 +52,7 @@ export default async function FindingsPage() {
                 {sorted.map((f) => (
                   <tr
                     key={f.id}
-                    className="border-t border-slate-800/60 hover:bg-slate-800/20"
+                    className="border-t border-zinc-800/60 hover:bg-zinc-800/20"
                   >
                     <td className="px-5 py-2">
                       <SeverityChip severity={f.severity as Severity} />
@@ -60,7 +60,7 @@ export default async function FindingsPage() {
                     <td className="px-5 py-2">
                       <Link
                         href={`/findings/${f.id}`}
-                        className="text-slate-100 hover:text-sky-300"
+                        className="text-zinc-100 hover:text-emerald-400"
                       >
                         {f.title}
                       </Link>
@@ -68,13 +68,13 @@ export default async function FindingsPage() {
                     <td className="px-5 py-2">
                       <Pill tone="slate">{f.category}</Pill>
                     </td>
-                    <td className="px-5 py-2 text-slate-400 font-mono text-xs">
+                    <td className="px-5 py-2 text-zinc-400 font-mono text-xs">
                       {f.wstgId ?? "—"}
                     </td>
                     <td className="px-5 py-2">
                       <StateBadge state={f.state as FindingState} />
                     </td>
-                    <td className="px-5 py-2 text-slate-500 text-xs">
+                    <td className="px-5 py-2 text-zinc-500 text-xs">
                       {new Date(f.lastSeenAt).toLocaleDateString()}
                     </td>
                   </tr>

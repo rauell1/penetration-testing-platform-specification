@@ -63,7 +63,7 @@ export default async function ScanRunDetail({
             <RunStatusBadge status={r.status as ScanRunStatus} />
             <Link
               href="/scans"
-              className="rounded-md border border-slate-700 hover:border-slate-500 text-slate-200 px-3.5 py-2 text-sm"
+              className="rounded-md border border-zinc-700 hover:border-zinc-500 text-zinc-200 px-3.5 py-2 text-sm"
             >
               ← All runs
             </Link>
@@ -97,7 +97,7 @@ export default async function ScanRunDetail({
 
         <SectionCard title="Findings from this run">
           {findingsList.length === 0 ? (
-            <p className="text-sm text-slate-400">No findings.</p>
+            <p className="text-sm text-zinc-400">No findings.</p>
           ) : (
             <ul className="space-y-2">
               {findingsList
@@ -111,18 +111,18 @@ export default async function ScanRunDetail({
                   return (
                     <li
                       key={f.id}
-                      className="flex items-center gap-3 border-b border-slate-800/60 pb-2 last:border-0"
+                      className="flex items-center gap-3 border-b border-zinc-800/60 pb-2 last:border-0"
                     >
                       <SeverityChip severity={f.severity as Severity} />
                       <Link
                         href={`/findings/${f.id}`}
-                        className="text-slate-200 hover:text-sky-300 text-sm flex-1 min-w-0 truncate"
+                        className="text-zinc-200 hover:text-emerald-400 text-sm flex-1 min-w-0 truncate"
                       >
                         {f.title}
                       </Link>
                       <Pill tone="slate">{f.category}</Pill>
                       {inst?.path && (
-                        <code className="text-xs text-slate-500 hidden md:inline">
+                        <code className="text-xs text-zinc-500 hidden md:inline">
                           {inst.method} {inst.path}
                         </code>
                       )}

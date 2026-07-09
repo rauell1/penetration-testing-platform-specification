@@ -54,7 +54,7 @@ export default async function TargetDetail({
         actions={
           <Link
             href="/targets"
-            className="rounded-md border border-slate-700 hover:border-slate-500 text-slate-200 px-3.5 py-2 text-sm"
+            className="rounded-md border border-zinc-700 hover:border-zinc-500 text-zinc-200 px-3.5 py-2 text-sm"
           >
             ← All targets
           </Link>
@@ -64,12 +64,12 @@ export default async function TargetDetail({
         <div className="lg:col-span-2 space-y-6">
           <SectionCard title="Scope" eyebrow="Enforced in every worker">
             {scopeRows.length === 0 ? (
-              <p className="text-sm text-slate-400">No scope defined.</p>
+              <p className="text-sm text-zinc-400">No scope defined.</p>
             ) : (
               <div className="space-y-3">
                 <div className="text-sm">
-                  <span className="text-slate-400">Scope: </span>
-                  <span className="text-slate-200 font-medium">
+                  <span className="text-zinc-400">Scope: </span>
+                  <span className="text-zinc-200 font-medium">
                     {scopeRows[0].name}
                   </span>
                   {scopeRows[0].isDefault && (
@@ -79,7 +79,7 @@ export default async function TargetDetail({
                   )}
                 </div>
                 <table className="w-full text-sm">
-                  <thead className="text-[10px] uppercase tracking-widest text-slate-500">
+                  <thead className="text-[10px] uppercase tracking-widest text-zinc-500">
                     <tr>
                       <th className="text-left py-2">Type</th>
                       <th className="text-left py-2">Pattern</th>
@@ -87,7 +87,7 @@ export default async function TargetDetail({
                   </thead>
                   <tbody>
                     {scopeRuleRows.map((r) => (
-                      <tr key={r.id} className="border-t border-slate-800/60">
+                      <tr key={r.id} className="border-t border-zinc-800/60">
                         <td className="py-2">
                           <Pill
                             tone={
@@ -101,7 +101,7 @@ export default async function TargetDetail({
                             {r.type}
                           </Pill>
                         </td>
-                        <td className="py-2 font-mono text-xs text-slate-300">
+                        <td className="py-2 font-mono text-xs text-zinc-300">
                           {r.pattern}
                         </td>
                       </tr>
@@ -114,27 +114,27 @@ export default async function TargetDetail({
 
           <SectionCard title="Scan history">
             {runs.length === 0 ? (
-              <p className="text-sm text-slate-400">No scans yet.</p>
+              <p className="text-sm text-zinc-400">No scans yet.</p>
             ) : (
               <ul className="space-y-3">
                 {runs.map((r) => (
                   <li
                     key={r.id}
-                    className="flex items-center gap-3 text-sm border-b border-slate-800/60 pb-3 last:border-0 last:pb-0"
+                    className="flex items-center gap-3 text-sm border-b border-zinc-800/60 pb-3 last:border-0 last:pb-0"
                   >
                     <RunStatusBadge status={r.status as ScanRunStatus} />
                     <Link
                       href={`/scans/${r.id}`}
-                      className="text-slate-200 hover:text-sky-300 font-mono text-xs"
+                      className="text-zinc-200 hover:text-emerald-400 font-mono text-xs"
                     >
                       {r.id.slice(0, 8)}
                     </Link>
-                    <span className="text-slate-500 text-xs">
+                    <span className="text-zinc-500 text-xs">
                       {r.finishedAt
                         ? new Date(r.finishedAt).toLocaleString()
                         : "—"}
                     </span>
-                    <span className="ml-auto text-slate-400 text-xs">
+                    <span className="ml-auto text-zinc-400 text-xs">
                       {(r.stats as { findings?: number })?.findings ?? 0}{" "}
                       findings
                     </span>
@@ -153,20 +153,20 @@ export default async function TargetDetail({
                   <Pill tone={v.status === "verified" ? "emerald" : "amber"}>
                     {v.status}
                   </Pill>{" "}
-                  <span className="text-slate-400 text-xs">
+                  <span className="text-zinc-400 text-xs">
                     ({v.type.replace("_", " ")})
                   </span>
                 </div>
-                <div className="font-mono text-xs text-slate-300 break-all mb-2">
+                <div className="font-mono text-xs text-zinc-300 break-all mb-2">
                   {v.challenge}
                 </div>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] text-zinc-500">
                   Verified{" "}
                   {v.verifiedAt
                     ? new Date(v.verifiedAt).toLocaleDateString()
                     : "—"}
                 </div>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] text-zinc-500">
                   Expires{" "}
                   {v.expiresAt
                     ? new Date(v.expiresAt).toLocaleDateString()
@@ -180,11 +180,11 @@ export default async function TargetDetail({
           <SectionCard title="Metadata">
             <dl className="text-sm space-y-2">
               <div>
-                <dt className="text-[10px] uppercase text-slate-500">Kind</dt>
-                <dd className="text-slate-200">{t.kind}</dd>
+                <dt className="text-[10px] uppercase text-zinc-500">Kind</dt>
+                <dd className="text-zinc-200">{t.kind}</dd>
               </div>
               <div>
-                <dt className="text-[10px] uppercase text-slate-500">
+                <dt className="text-[10px] uppercase text-zinc-500">
                   Active scans
                 </dt>
                 <dd>
@@ -196,10 +196,10 @@ export default async function TargetDetail({
                 </dd>
               </div>
               <div>
-                <dt className="text-[10px] uppercase text-slate-500">
+                <dt className="text-[10px] uppercase text-zinc-500">
                   Created
                 </dt>
-                <dd className="text-slate-200 text-xs">
+                <dd className="text-zinc-200 text-xs">
                   {new Date(t.createdAt).toLocaleString()}
                 </dd>
               </div>
