@@ -1,5 +1,5 @@
 // ============================================================================
-// SentinelDAST — Authorized Web Application Penetration Testing Platform
+// Aegis — Authorized Web Application Penetration Testing Platform
 // Drizzle schema (Postgres / Neon). This is a production-shaped schema for
 // the platform described in the accompanying blueprint. All tables carry an
 // explicit organization_id for tenant scoping. RLS is layered on top of that
@@ -289,7 +289,7 @@ export const targetVerifications = pgTable(
       .references(() => targets.id, { onDelete: "cascade" }),
     type: verificationTypeEnum("type").notNull(),
     status: verificationStatusEnum("status").notNull().default("pending"),
-    challenge: text("challenge").notNull(), // e.g. "sentinel-verify=abcd1234"
+    challenge: text("challenge").notNull(), // e.g. "aegis-verify=abcd1234"
     evidence: jsonb("evidence").notNull().default(sql`'{}'::jsonb`),
     verifiedAt: timestamp("verified_at", { withTimezone: true }),
     expiresAt: timestamp("expires_at", { withTimezone: true }),

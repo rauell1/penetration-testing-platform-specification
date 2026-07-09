@@ -1,5 +1,5 @@
 // ============================================================================
-// SentinelDAST — Core TypeScript domain model.
+// Aegis — Core TypeScript domain model.
 // These types are the "contract" surface between the control plane (Next.js
 // on Vercel) and the worker fleet (long-running compute off Vercel).
 // ============================================================================

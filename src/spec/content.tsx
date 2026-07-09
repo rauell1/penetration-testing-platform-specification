@@ -31,7 +31,7 @@ export const SPEC_SECTIONS: SpecSection[] = [
       <>
         <h2>Product boundary</h2>
         <p>
-          <strong>SentinelDAST</strong> is an authorized web-application
+          <strong>Aegis</strong> is an authorized web-application
           penetration-testing SaaS. Customers register targets, prove ownership,
           define scope, then run <em>passive</em> assessments by default and{" "}
           <em>controlled active</em> assessments once every gate is satisfied.
@@ -238,13 +238,13 @@ export const SPEC_SECTIONS: SpecSection[] = [
         <ul>
           <li>
             <strong>DNS TXT</strong> — we generate a challenge like{" "}
-            <Code>sentinel-verify=b7f3a9e21c4d</Code>; a worker resolves the TXT
+            <Code>aegis-verify=b7f3a9e21c4d</Code>; a worker resolves the TXT
             record from three geographically diverse resolvers and requires 2/3
             agreement before flipping <Code>status=verified</Code>.
           </li>
           <li>
             <strong>HTTP file</strong> — the customer serves a file at{" "}
-            <Code>/.well-known/sentinel-verify/&lt;token&gt;</Code>. Fetched
+            <Code>/.well-known/aegis-verify/&lt;token&gt;</Code>. Fetched
             with a fresh connection, no redirects followed, size cap 256B.
           </li>
           <li>
@@ -421,7 +421,7 @@ create policy findings_tenant_isolation on findings
       "pnpm workspaces. apps/web ships to Vercel. services/* ship to Fly. packages/* are the shared kernel. The build enforces that apps/web cannot import from services/*.",
     body: (
       <>
-        <Pre>{`sentinel/
+        <Pre>{`aegis/
 ├─ apps/
 │  └─ web/                     # Next.js on Vercel — control plane + UI
 │     ├─ app/                  # App Router pages + route handlers
@@ -724,7 +724,7 @@ returning *;`}</Pre>
         <h2>Storage</h2>
         <p>
           Postgres holds only <Code>auth_profiles.secret_ref</Code>, a pointer
-          like <Code>{"kms://sentinel-secrets/{org}/{profile}/v3"}</Code>. The
+          like <Code>{"kms://aegis-secrets/{org}/{profile}/v3"}</Code>. The
           material is envelope-encrypted with a per-org data key wrapped by a
           per-tenant KMS master key. Rotation increments <Code>v3 → v4</Code>{" "}
           and old versions are destroyed after grace.

@@ -7,7 +7,7 @@ export default function SpecIndex() {
     <Shell activePath="/spec">
       <PageHeader
         eyebrow="Blueprint"
-        title="SentinelDAST implementation blueprint"
+        title="Aegis implementation blueprint"
         description="A staff-plus, implementation-grade specification for a real SaaS penetration-testing platform. The Drizzle schema, policy engine, scope engine, and fingerprint/normalizer modules in this repo are the reference implementations of the sections below."
       />
       <div className="max-w-6xl mx-auto px-6 lg:px-10 py-8 grid md:grid-cols-2 gap-4">

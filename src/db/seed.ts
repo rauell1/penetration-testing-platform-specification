@@ -43,7 +43,7 @@ const PROFILE_CONFIG: ScanProfileConfig = {
   timeoutMs: 30 * 60 * 1000,
   maxDepth: 4,
   maxPages: 400,
-  headers: { "User-Agent": "SentinelDAST/1.0 (+authorized-scan)" },
+  headers: { "User-Agent": "Aegis/1.0 (+authorized-scan)" },
   modules: {
     passive: { headers: true, cookies: true, tls: true, mixedContent: true, fingerprint: true },
     active: { reflectedXss: true, sqliIndicators: true, pathTraversal: true, openRedirect: true },
@@ -52,7 +52,7 @@ const PROFILE_CONFIG: ScanProfileConfig = {
 };
 
 async function main() {
-  console.log("🌱 seeding SentinelDAST demo data…");
+  console.log("🌱 seeding Aegis demo data…");
 
   // 1. Org
   const [org] =
@@ -141,8 +141,8 @@ async function main() {
       targetId: targetRow.id,
       type: "dns_txt",
       status: "verified",
-      challenge: "sentinel-verify=b7f3a9e21c4d",
-      evidence: { record: "TXT sentinel-verify=b7f3a9e21c4d", resolvedAt: new Date().toISOString() },
+      challenge: "aegis-verify=b7f3a9e21c4d",
+      evidence: { record: "TXT aegis-verify=b7f3a9e21c4d", resolvedAt: new Date().toISOString() },
       verifiedAt: new Date(),
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 90),
     });

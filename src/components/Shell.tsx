@@ -20,7 +20,6 @@ const NAV_SECTIONS: Array<{
     title: "Blueprint",
     items: [
       { href: "/spec", label: "Table of contents" },
-      { href: "/spec/interactive", label: "Interactive Showcase", badge: "NEW" },
       { href: "/spec/architecture", label: "1. Architecture" },
       { href: "/spec/threat-model", label: "2. Threat model" },
       { href: "/spec/legal", label: "3. Legal & authorization" },
@@ -59,11 +58,11 @@ export default function Shell({
         <div className="px-5 pt-6 pb-4 border-b border-zinc-800/80">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-zinc-950 font-black text-sm glow">
-              S
+              A
             </div>
             <div className="leading-tight">
               <div className="font-semibold text-zinc-100 group-hover:text-white">
-                SentinelDAST
+                Aegis
               </div>
               <div className="text-[10px] uppercase tracking-widest text-emerald-400/80">
                 authorized · WSTG-aligned
@@ -113,9 +112,9 @@ export default function Shell({
       <main className="flex-1 min-w-0">
         <div className="lg:hidden sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur px-4 py-3 flex items-center gap-2">
           <div className="w-7 h-7 rounded-md bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-zinc-950 font-black text-xs">
-            S
+            A
           </div>
-          <span className="font-semibold text-zinc-100">SentinelDAST</span>
+          <span className="font-semibold text-zinc-100">Aegis</span>
           <Link href="/spec" className="ml-auto text-xs text-emerald-400 hover:underline">
             spec
           </Link>

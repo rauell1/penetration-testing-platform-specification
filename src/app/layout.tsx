@@ -3,7 +3,7 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SentinelDAST — Authorized Web Pentest Platform",
+  title: "Aegis — Authorized Web Pentest Platform",
   description:
     "A production-shaped blueprint and reference implementation for an authorized, OWASP WSTG-aligned web application penetration testing SaaS.",
 };
