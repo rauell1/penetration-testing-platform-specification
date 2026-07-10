@@ -64,6 +64,23 @@ It reads the `aegis_access` cookie, verifies the JWT, and returns `{user, organi
 Use `withMiddleware()` from `@/lib/auth-middleware` for API routes.
 It handles body validation (Zod), rate limiting, audit logging, and optional RBAC.
 
+### Auth — Registration allowlist (Security)
+Registration is restricted to a single email configured by `ALLOWED_REGISTRATION_EMAIL`
+(default: `royokola3@gmail.com`). The check lives in `src/app/api/auth/register/route.ts`
+and runs server-side — no client-side bypass possible. Any attempt to register with
+a different email returns 403 `EMAIL_NOT_ALLOWED`.
+
+### Neon Auth (Goal B — Migration Target)
+Managed Better Auth running in Neon, branchable with the database.
+- Install: `npm install @neondatabase/auth`
+- Enable in Neon Console: Project → Branch → Auth → Enable
+- Required env vars: `NEON_AUTH_BASE_URL`, `NEON_AUTH_COOKIE_SECRET`
+- Server instance: `src/lib/auth/server.ts` (lazy-initializes when env vars present)
+- Catch-all handler: `src/app/api/auth/[...path]/route.ts` (503 if unconfigured)
+- Legacy JWT auth (`src/lib/auth.ts`) remains active until migration completes.
+- Migration plan: swap `requireAuth()` → `neonAuth.getSession()`, middleware → `neonAuth.middleware()`,
+  then remove legacy `/api/auth/login|register|logout` routes.
+
 ### Columns — `displayName` not `name`
 The `users` table has `displayName` column (mapped to `display_name` in Postgres).
 Never use `user.name` — use `user.displayName`.

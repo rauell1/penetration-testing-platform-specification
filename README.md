@@ -30,6 +30,16 @@ Browser ─▶ Vercel Edge (Next.js dashboard + control-plane API)
 
 Five trust zones, three tenancy isolation layers, one source of truth. See `/spec` in the running app for the long-form design document and `/dashboard` for the live operational view.
 
+> **Security note:** Registration is hard-locked to `ALLOWED_REGISTRATION_EMAIL`
+> (defaults to `royokola3@gmail.com`). No other email can create an account.
+> See `src/app/api/auth/register/route.ts:22-31` for the server-side check.
+
+> **Goal B — Neon Auth:** The auth layer is designed to migrate to Neon Auth
+> (managed Better Auth). Enable in Neon Console → Project → Branch → Auth → Enable,
+> then set `NEON_AUTH_BASE_URL` and `NEON_AUTH_COOKIE_SECRET`. Until then,
+> the legacy JWT/Argon2 auth remains active. See `/build-plan` in the app for
+> the full migration roadmap.
+
 ## Quick start
 
 ### Prerequisites
@@ -99,12 +109,15 @@ App boots at [http://localhost:3000](http://localhost:3000).
 
 ## Environment variables
 
-| Variable              | Required | Purpose                                                       |
-| --------------------- | -------- | ------------------------------------------------------------- |
-| `DATABASE_URL`        | Yes      | Neon Postgres connection string (with `?sslmode=require`)     |
-| `JWT_SECRET`          | Yes      | HS256 signing key for access + refresh tokens (32+ chars)     |
-| `NODE_ENV`            | No       | `development` / `production`; controls cookie `secure` flag   |
-| `NEXT_PUBLIC_APP_URL` | No       | Base URL shown in client emails / auth redirects              |
+| Variable                    | Required | Purpose                                                       |
+| --------------------------- | -------- | ------------------------------------------------------------- |
+| `DATABASE_URL`              | Yes      | Neon Postgres connection string (with `?sslmode=require`)     |
+| `JWT_SECRET`                | Yes      | HS256 signing key for access + refresh tokens (32+ chars)     |
+| `ALLOWED_REGISTRATION_EMAIL`| No       | Only this email can register (default: `royokola3@gmail.com`) |
+| `NEON_AUTH_BASE_URL`        | No       | Neon Auth URL (Goal B — enable in Neon Console)               |
+| `NEON_AUTH_COOKIE_SECRET`   | No       | Cookie secret for Neon Auth (32+ chars; `openssl rand -base64 32`) |
+| `NODE_ENV`                  | No       | `development` / `production`; controls cookie `secure` flag   |
+| `NEXT_PUBLIC_APP_URL`       | No       | Base URL shown in client emails / auth redirects              |
 
 > Never commit `.env`. The repo's `.gitignore` excludes it. Production secrets belong in your hosting platform's secret store (Vercel encrypted env vars, Fly secrets, etc.).
 

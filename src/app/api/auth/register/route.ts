@@ -18,7 +18,19 @@ export const dynamic = "force-dynamic";
 export const POST = withMiddleware(
   async (req) => {
     const body = req.validatedBody as z.infer<typeof registerSchema>;
-    
+
+    // ── Hard allowlist ───────────────────────────────────────────
+    // Only the configured email can create an account. Set
+    // ALLOWED_REGISTRATION_EMAIL in the environment to change it.
+    const allowedEmail = (process.env.ALLOWED_REGISTRATION_EMAIL ?? "royokola3@gmail.com").toLowerCase().trim();
+
+    if (body.email.toLowerCase().trim() !== allowedEmail) {
+      return NextResponse.json(
+        { error: "Registration is restricted to the platform owner.", code: "EMAIL_NOT_ALLOWED", field: "email" },
+        { status: 403 }
+      );
+    }
+
     // Check if email already exists
     const [existingUser] = await db
       .select()

@@ -75,7 +75,7 @@ export default function RegisterPage() {
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 backdrop-blur p-6 space-y-5">
           <div>
             <h1 className="text-xl font-semibold">Create your account</h1>
-            <p className="text-sm text-zinc-400 mt-1">You&apos;ll be the owner of a new organization.</p>
+            <p className="text-sm text-zinc-400 mt-1">Registration is restricted to the platform owner.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
