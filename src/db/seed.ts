@@ -2,6 +2,7 @@
 // two completed scan runs, and a spread of findings across severities.
 // Safe to run repeatedly — every insert is guarded by an existence check.
 
+import { createHash } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { db } from "./index";
 import {
@@ -36,6 +37,7 @@ const COMPILED_SCOPE: CompiledScope = {
   maxConcurrentRequests: 2,
   allowActive: true,
   requireVerification: true,
+  pinnedHosts: [],
 };
 
 const PROFILE_CONFIG: ScanProfileConfig = {
@@ -69,6 +71,7 @@ async function main() {
           slug: DEMO_ORG_SLUG,
           name: "Acme Security",
           plan: "team",
+          emergencyStop: false,
           settings: { requireMfaForActive: true, allowActiveScans: true, maxConcurrentScans: 3 },
           quotas: { monthlyScans: 200, maxTargets: 25 },
         })
@@ -213,6 +216,7 @@ async function main() {
   if (existingRuns.length === 0) {
     const earlier = new Date(Date.now() - 1000 * 60 * 60 * 24 * 7);
     const recent = new Date(Date.now() - 1000 * 60 * 60 * 2);
+    const scopeHash = createHash("sha256").update(JSON.stringify(COMPILED_SCOPE)).digest("hex").slice(0, 32);
     const commonSnapshot = {
       scopeSnapshot: COMPILED_SCOPE,
       profileSnapshot: PROFILE_CONFIG,
@@ -222,6 +226,8 @@ async function main() {
         denyCodes: [],
         decidedAt: new Date().toISOString(),
       },
+      scopeHash,
+      policyVersion: "2025.07.1",
     };
     const [runA] = await db
       .insert(scanRuns)
@@ -264,7 +270,7 @@ async function main() {
       wstgId: string;
       cwe?: string;
       severity: "info" | "low" | "medium" | "high" | "critical";
-      confidence: "tentative" | "firm" | "certain";
+      confidence: "tentative" | "likely" | "confirmed";
       host: string;
       method?: string;
       path?: string;
@@ -280,7 +286,7 @@ async function main() {
         wstgId: "WSTG-CONF-12",
         cwe: "CWE-693",
         severity: "medium",
-        confidence: "certain",
+        confidence: "confirmed",
         host: DEMO_TARGET_HOST,
         method: "GET",
         path: "/",
@@ -295,8 +301,8 @@ async function main() {
         category: "session_management",
         wstgId: "WSTG-SESS-02",
         cwe: "CWE-1004",
-        severity: "high",
-        confidence: "certain",
+      severity: "medium",
+      confidence: "likely",
         host: DEMO_TARGET_HOST,
         method: "POST",
         path: "/login",
@@ -313,7 +319,7 @@ async function main() {
         wstgId: "WSTG-INPV-01",
         cwe: "CWE-79",
         severity: "high",
-        confidence: "firm",
+        confidence: "likely",
         host: DEMO_TARGET_HOST,
         method: "GET",
         path: "/search",
@@ -330,7 +336,7 @@ async function main() {
         wstgId: "WSTG-INPV-05",
         cwe: "CWE-89",
         severity: "critical",
-        confidence: "firm",
+        confidence: "likely",
         host: DEMO_TARGET_HOST,
         method: "GET",
         path: "/products",
@@ -347,7 +353,7 @@ async function main() {
         wstgId: "WSTG-CLNT-04",
         cwe: "CWE-601",
         severity: "medium",
-        confidence: "firm",
+        confidence: "likely",
         host: DEMO_TARGET_HOST,
         method: "GET",
         path: "/login",
@@ -363,7 +369,7 @@ async function main() {
         wstgId: "WSTG-CRYP-01",
         cwe: "CWE-327",
         severity: "medium",
-        confidence: "certain",
+        confidence: "confirmed",
         host: DEMO_TARGET_HOST,
         provenance: "adapter.tls",
         remediation: "Disable TLS 1.0/1.1 at the load balancer. Require TLS 1.2+.",
@@ -376,7 +382,7 @@ async function main() {
         wstgId: "WSTG-CLNT-09",
         cwe: "CWE-1021",
         severity: "low",
-        confidence: "certain",
+        confidence: "confirmed",
         host: DEMO_TARGET_HOST,
         method: "GET",
         path: "/account",
@@ -390,7 +396,7 @@ async function main() {
         category: "information_gathering",
         wstgId: "WSTG-INFO-02",
         severity: "info",
-        confidence: "certain",
+        confidence: "confirmed",
         host: DEMO_TARGET_HOST,
         method: "GET",
         path: "/",
@@ -405,7 +411,7 @@ async function main() {
         wstgId: "WSTG-ATHN-03",
         cwe: "CWE-307",
         severity: "high",
-        confidence: "firm",
+        confidence: "likely",
         host: DEMO_TARGET_HOST,
         method: "POST",
         path: "/login",

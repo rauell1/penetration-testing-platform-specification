@@ -1,14 +1,16 @@
 // ============================================================================
 // Policy engine — decides whether a scan may launch. Every launch goes
 // through this. The result is snapshotted onto the scan_run row so that
-// audits can prove exactly which inputs the decision was made from.
+// audits can prove exactly which inputs the decision was decided from.
 // ============================================================================
 
 import type {
   CompiledScope,
   PolicyDecision,
   PolicyDecisionInput,
+  PolicyDenyCode,
 } from "./types";
+import { POLICY_VERSION } from "./types";
 
 export interface PolicyContext {
   target: {
@@ -16,6 +18,7 @@ export interface PolicyContext {
     activeScansEnabled: boolean;
     verified: boolean;
     hasValidAuthorizationArtifact: boolean;
+    requiresManualApproval: boolean;
   };
   scope: CompiledScope;
   profile: {
@@ -29,6 +32,8 @@ export interface PolicyContext {
       requireMfaForActive?: boolean;
       allowActiveScans?: boolean;
     };
+    // Org-level kill switch. When true, no new scans (active or passive) launch.
+    emergencyStop: boolean;
   };
   actor: {
     id: string;
@@ -41,6 +46,21 @@ export interface PolicyContext {
     concurrentScansRunning: number;
     concurrentScansLimit: number;
   };
+  // The policy version the caller compiled against; must match POLICY_VERSION.
+  policyVersion: string;
+  // If provided, the scope hash the caller computed; the engine stores it on
+  // the scan_run so workers can re-verify and abort on SCOPE_DRIFT.
+  scopeHash?: string;
+}
+
+// Platform-wide kill switch (env override). When set, all scans across all
+// orgs are blocked at preflight.
+let PLATFORM_KILL_SWITCH = false;
+export function setPlatformKillSwitch(on: boolean) {
+  PLATFORM_KILL_SWITCH = on;
+}
+export function isPlatformKillSwitchOn() {
+  return PLATFORM_KILL_SWITCH;
 }
 
 const ROLE_CAN_LAUNCH_PASSIVE: PolicyContext["actor"]["role"][] = [
@@ -61,7 +81,27 @@ export function decidePolicy(
   ctx: PolicyContext,
 ): PolicyDecision {
   const reasons: string[] = [];
-  const denyCodes: string[] = [];
+  const denyCodes: PolicyDenyCode[] = [];
+
+  // --- Platform kill switch (highest priority) ---
+  if (isPlatformKillSwitchOn()) {
+    denyCodes.push("PLATFORM_KILL_SWITCH");
+    reasons.push("platform kill switch is engaged");
+  }
+
+  // --- Org kill switch ---
+  if (ctx.organization.emergencyStop) {
+    denyCodes.push("ORG_KILL_SWITCH");
+    reasons.push("organization emergency_stop is engaged");
+  }
+
+  // --- Policy version staleness ---
+  if (ctx.policyVersion !== POLICY_VERSION) {
+    denyCodes.push("POLICY_VERSION_STALE");
+    reasons.push(
+      `policy version ${ctx.policyVersion} is stale (engine expects ${POLICY_VERSION})`,
+    );
+  }
 
   // --- Role gate ---
   const allowedRoles = input.activeRequested
@@ -78,6 +118,12 @@ export function decidePolicy(
   if (!ctx.target.verified) {
     denyCodes.push("TARGET_NOT_VERIFIED");
     reasons.push("target ownership has not been verified");
+  }
+
+  // --- Mode-in-scope gate ---
+  if (input.activeRequested && !ctx.scope.allowActive) {
+    denyCodes.push("MODE_NOT_IN_SCOPE");
+    reasons.push("active scanning is not permitted by the target's scope");
   }
 
   // --- Active scan gates ---
@@ -101,8 +147,14 @@ export function decidePolicy(
       denyCodes.push("MFA_REQUIRED");
       reasons.push("MFA is required to launch active scans");
     }
+    if (ctx.target.requiresManualApproval && !ctx.target.hasValidAuthorizationArtifact) {
+      // For deep-active targets requiring manual approval, an authorization
+      // artifact is a hard block. Otherwise it remains a soft warning.
+      denyCodes.push("MFA_REQUIRED");
+      reasons.push("manual-approval target requires a signed authorization artifact");
+    }
     if (!ctx.target.hasValidAuthorizationArtifact) {
-      // Not a hard block on all plans — but we surface it prominently.
+      // Soft warning — not a hard block on all plans.
       reasons.push(
         "no signed authorization artifact on file (recommended for active scans)",
       );

@@ -104,8 +104,8 @@ export const severityEnum = pgEnum("severity", [
 
 export const confidenceEnum = pgEnum("confidence", [
   "tentative",
-  "firm",
-  "certain",
+  "likely",
+  "confirmed",
 ]);
 
 export const findingStateEnum = pgEnum("finding_state", [
@@ -168,6 +168,7 @@ export const users = pgTable(
     passwordHash: text("password_hash"), // null if SSO-only
     mfaEnabled: boolean("mfa_enabled").notNull().default(false),
     lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -185,10 +186,15 @@ export const organizations = pgTable(
     slug: text("slug").notNull(),
     name: text("name").notNull(),
     plan: text("plan").notNull().default("free"),
+    // Org-level kill switch: when true, the policy preflight blocks all new scans.
+    emergencyStop: boolean("emergency_stop").notNull().default(false),
+    // Per-org data-encryption key (wrapped by KMS master key). Blueprint Part 7.8.
+    encryptedDek: text("encrypted_dek"),
     // Governance / safety settings, e.g. { requireMfa, allowActiveScans, maxConcurrentScans }
     settings: jsonb("settings").notNull().default(sql`'{}'::jsonb`),
     // Quotas snapshot: { monthlyScans, dailyRequests, maxTargets }
     quotas: jsonb("quotas").notNull().default(sql`'{}'::jsonb`),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -263,6 +269,7 @@ export const targets = pgTable(
       .notNull()
       .default(false),
     createdByUserId: uuid("created_by_user_id").references(() => users.id),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -387,6 +394,7 @@ export const scanProfiles = pgTable(
     kind: scanProfileKindEnum("kind").notNull(),
     // { requestBudget, timeoutMs, maxDepth, maxPages, headers, modules: {...} }
     config: jsonb("config").notNull().default(sql`'{}'::jsonb`),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -417,6 +425,7 @@ export const authProfiles = pgTable(
     // Pointer to KMS-encrypted material stored outside the primary DB
     secretRef: text("secret_ref").notNull(),
     rotatesAt: timestamp("rotates_at", { withTimezone: true }),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -450,6 +459,10 @@ export const scanRuns = pgTable(
     scopeSnapshot: jsonb("scope_snapshot").notNull(),
     profileSnapshot: jsonb("profile_snapshot").notNull(),
     policyDecision: jsonb("policy_decision").notNull(),
+    // SHA-256 of the compiled scope. Workers re-verify and abort on scope drift.
+    scopeHash: text("scope_hash").notNull(),
+    // Policy-engine version that authorized this run; stale runs are rejected.
+    policyVersion: text("policy_version").notNull(),
     progress: integer("progress").notNull().default(0), // 0..100
     startedAt: timestamp("started_at", { withTimezone: true }),
     finishedAt: timestamp("finished_at", { withTimezone: true }),
@@ -463,6 +476,13 @@ export const scanRuns = pgTable(
     index("scan_runs_org_created_idx").on(t.organizationId, t.createdAt),
     index("scan_runs_target_idx").on(t.targetId),
     index("scan_runs_status_idx").on(t.status),
+    // Partial unique index: at most one non-terminal run per target at a time.
+    // Blueprint Part 8.7 — guards against duplicate concurrent active scans.
+    uniqueIndex("one_active_run_per_target")
+      .on(t.targetId)
+      .where(
+        sql`status IN ('queued','policy_preflight','resolving','crawling','passive','active','normalizing','reporting')`,
+      ),
   ],
 );
 
@@ -480,7 +500,10 @@ export const scanStageRuns = pgTable(
     payload: jsonb("payload").notNull().default(sql`'{}'::jsonb`),
     result: jsonb("result").notNull().default(sql`'{}'::jsonb`),
   },
-  (t) => [index("stage_runs_run_idx").on(t.scanRunId)],
+  (t) => [
+    index("stage_runs_run_idx").on(t.scanRunId),
+    uniqueIndex("stage_runs_run_stage_uq").on(t.scanRunId, t.stage),
+  ],
 );
 
 export const scanJobs = pgTable(
@@ -496,6 +519,8 @@ export const scanJobs = pgTable(
     kind: text("kind").notNull(), // "crawl.page" | "passive.headers" | "adapter.zap" | ...
     status: scanJobStatusEnum("status").notNull().default("queued"),
     priority: integer("priority").notNull().default(100),
+    // Signed HMAC claim verified by workers before acting. Blueprint Part 7.7.
+    claimToken: text("claim_token").notNull(),
     attempts: integer("attempts").notNull().default(0),
     maxAttempts: integer("max_attempts").notNull().default(3),
     leasedUntil: timestamp("leased_until", { withTimezone: true }),
@@ -763,6 +788,7 @@ export const webhooks = pgTable(
     secretRef: text("secret_ref").notNull(),
     events: jsonb("events").notNull().default(sql`'[]'::jsonb`),
     enabled: boolean("enabled").notNull().default(true),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

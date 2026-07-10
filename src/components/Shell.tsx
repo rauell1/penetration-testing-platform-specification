@@ -78,7 +78,7 @@ export default function Shell({
               </div>
               <ul className="space-y-0.5">
                 {section.items.map((item) => {
-                   const active = activePath === item.href;
+                  const active = activePath === item.href;
                   return (
                     <li key={item.href}>
                       <Link

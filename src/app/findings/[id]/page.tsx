@@ -111,11 +111,9 @@ export default async function FindingDetail({
               <Row label="Confidence">
                 <Pill
                   tone={
-                    f.confidence === "certain"
+                    f.confidence === "confirmed" || f.confidence === "likely"
                       ? "emerald"
-                      : f.confidence === "firm"
-                        ? "emerald"
-                        : "amber"
+                      : "amber"
                   }
                 >
                   {f.confidence}

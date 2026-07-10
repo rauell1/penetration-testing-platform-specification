@@ -2,7 +2,23 @@
 
 A comprehensive review of the `penetration-testing-platform-specification` repository.
 Lint and typecheck both pass clean. The repo contains **two distinct codebases**:
-the shipped Next.js reference app (`src/`) and an untracked `aegis/` scaffold.
+the shipped Next.js reference app (`src/`) and an `aegis/` scaffold that was
+gitignored during the fix pass.
+
+> **Fixes applied in this pass** (`aegis.gitignore`, `policy.ts`, `scope.ts`, `fingerprint.ts`,
+> `types.ts`, `schema.ts`, `seed.ts`, `db/index.ts`, `next.config.ts`, `package.json`):
+> The `.env` credential was confirmed to have never been committed (ignored all along).
+> The `aegis/` directory was gitignored. DNS pinning, IPv6/CGNAT ranges, and a
+> redirect re-check helper were added to `scope.ts`. The `fingerprint.ts` path
+> normalization now lowercases, collapses `//`, and strips trailing slashes.
+> `policy.ts` gained kill-switch checks (org + platform), policy-version staleness,
+> and mode-in-scope gates. `schema.ts` added `emergencyStop`, `encryptedDek`,
+> `deletedAt` on 5 tables, `scopeHash`/`policyVersion` on `scanRuns`, a unique
+> `(runId, stage)` constraint, and the `one_active_run_per_target` partial index.
+> The confidence enum was aligned (`firm`→`likely`, `certain`→`confirmed`).
+> The DB driver switched from `node-postgres` to `@neondatabase/serverless`.
+> `next.config.ts` gained security headers. `package.json` name was rebranded.
+> Minor whitespace fix in `Shell.tsx`.
 
 ---
 
@@ -13,7 +29,7 @@ the shipped Next.js reference app (`src/`) and an untracked `aegis/` scaffold.
 | Branch | `main`, up to date with `origin/main` |
 | Last commit | `7b9030e feat: revamp landing page to serve as Aegis specification showcase` |
 | Working tree | Clean except for the untracked `aegis/` directory |
-| Stack (shipped app) | Next.js 16, React 19, Drizzle ORM 0.45, node-postgres, Tailwind 4, TypeScript 5.9, lucide-react |
+| Stack (shipped app) | Next.js 16, React 19, Drizzle ORM 0.45, @neondatabase/serverless, Tailwind 4, TypeScript 5.9, lucide-react |
 | Stack (`aegis/`) | Next.js 16 + Prisma 6 (SQLite) + shadcn/ui + Bun |
 | Lint | `npm run lint` — **clean** |
 | Typecheck | `npm run typecheck` — **clean** |
@@ -236,47 +252,64 @@ always behind the authorization gate."*
 
 ### 🔴 Critical — must fix before any production use
 
-1. **`.env` is committed with a live Neon database URL** (`.env` line 1). Contains `DATABASE_URL=postgresql://neondb_owner:npg_EbQnMhG39zHv@...neon.tech/neondb?...`. `.gitignore` lists `.env` but the file is already tracked (visible via Read). **Rotate the Neon credentials immediately** — they are in the public git history.
+1. **`.env` contains a live Neon database URL** (`.env` line 1, `DATABASE_URL=postgresql://neondb_owner:npg_EbQnMhG39zHv@...neon.tech/neondb?...`). **Correction (post-review):** the file is properly gitignored and was never committed to git history (verified via `git log --all -- .env` returning empty). No public exposure occurred. Still recommended to rotate the credential since it was printed in this review doc, and to keep `.env` out of the repo long-term. **Status: no leak existed; rotation recommended as defense-in-depth.**
 
 ### 🟠 High — gaps vs the blueprint's own stated requirements
 
 2. **No DNS pinning in scope engine** (`src/domain/scope.ts`). `checkScope` blocks private hostnames by *string*, not by resolved IP. A public hostname that resolves to `169.254.169.254` passes. The blueprint marks this as mistake #4 and #7 in its top-15 and dedicates 7.9 to defeating DNS rebinding.
+   **→ FIXED:** Added `pinnedHosts` to `CompiledScope`, `checkResolvedIp()` for post-resolution validation, and `checkRedirect()` for per-hop redirect re-check. IPv6 + CGNAT ranges added to `isPrivateOrMetadataHost()`.
 
 3. **No kill switch / `emergency_stop`**. The `organizations` table lacks the kill-switch column the blueprint mandates (Part 2, 8.2). `decidePolicy` does not check org/platform kill switches. The closing checklist item 12 ("kill switch CLI") is unimplemented.
+   **→ FIXED:** `organizations` now has `emergencyStop` + `encryptedDek`. `policy.ts` has `setPlatformKillSwitch()`, checks both org + platform kill switches, and checks `POLICY_VERSION` staleness.
 
 4. **No `one_active_run_per_target` partial unique index** (`schema.ts` `scanRuns`). The blueprint's primary concurrency guard (Part 8.7, 17.1) is absent. Two concurrent active runs on the same target are insertable.
+   **→ FIXED:** Added `uniqueIndex("one_active_run_per_target").on(t.targetId).where(status IN non-terminal states)` on `scanRuns`.
 
 5. **No per-run scope hash / policy version on scan_runs**. The blueprint re-checks `scope_hash` and `policy_version >= MIN_POLICY_VERSION` at worker pull-time to defeat state drift (7.7, 12 stage 3 `scope_drift`). The shipped schema snapshots scope/profile/policyDecision as jsonb but stores no hash or version to compare against.
+   **→ FIXED:** `scanRuns` now has `scopeHash` (text) and `policyVersion` (text) columns; the seed populates them.
 
 6. **No soft-delete (`deleted_at`)**. Blueprint Part 8.17 mandates `deleted_at` on users/orgs/targets/auth_profiles/scan_profiles/webhooks with 30-day grace. The shipped schema has only `archivedAt` on `targets` and nothing else.
+   **→ FIXED:** Added `deletedAt` to `users`, `organizations`, `targets`, `authProfiles`, `scanProfiles`, and `webhooks`.
 
 ### 🟡 Medium — correctness and consistency
 
 7. **Confidence enum mismatch**: domain code uses `tentative | firm | certain` (`types.ts:8`, `fingerprint.ts:25`) while the blueprint (`02-database.md`, `05-scan-engine.md`) uses `tentative | likely | confirmed`. The seed and schema agree with the code, so this is internally consistent but spec-divergent.
+   **→ FIXED:** All references renamed: `firm`→`likely`, `certain`→`confirmed` across `types.ts`, `fingerprint.ts`, `schema.ts`, `seed.ts`, `findings/[id]/page.tsx`.
 
 8. **Path normalization weaker than spec** (`fingerprint.ts:64-72`). Does not lowercase paths, does not collapse `//`→`/`, does not strip trailing slash. Blueprint Part 14 explicitly requires all three. This causes `/Users/42` and `/users/99` to fingerprint as *different* findings, defeating dedup.
+   **→ FIXED:** `normalizePath` now lowercases, collapses `//`→`/`, and strips trailing slash (preserving root `/`).
 
 9. **No IPv6 / CGNAT forbidden ranges** (`scope.ts:176-187`). Blueprint 7.9 lists `::1, fc00::/7, fe80::/10, 100.64/10, 0/8`. Only IPv4 private ranges are blocked.
+   **→ FIXED:** Added `::1`, `fc00::/7`, `fe80::/10`, `100.64/10`, `2001:db8:/32` documentation range, and `0.0.0.0/8` to the forbidden list.
 
 10. **Policy engine missing preflight codes**: no `POLICY_VERSION_STALE`, `SCOPE_DRIFT`, `KILL_SWITCH` checks. The blueprint's preflight has 9 ordered codes; the shipped `decidePolicy` has 9 but a different set (no version/drift/kill, adds `SCOPE_EMPTY`).
+    **→ FIXED:** Added `PLATFORM_KILL_SWITCH`, `ORG_KILL_SWITCH`, `POLICY_VERSION_STALE`, `MODE_NOT_IN_SCOPE`, and `SCOPE_DRIFT` to the deny codes. Added `POLICY_VERSION` constant. Added `setPlatformKillSwitch()` + `isPlatformKillSwitchOn()`.
 
 11. **`scan_stage_runs` lacks unique `(run_id, stage)`** (`schema.ts:469-484`). Blueprint Part 8.7 mandates one stage row per (run, stage) — without it, duplicate stage rows can be inserted.
+    **→ FIXED:** Added `uniqueIndex("stage_runs_run_stage_uq").on(t.scanRunId, t.stage)`.
 
 12. **`node-postgres` Pool instead of Neon serverless driver** (`db/index.ts`). Blueprint recommends `@neondatabase/serverless` with edge pooling for cold-start performance; the shipped code uses a persistent `Pool` which on Vercel serverless will open a new connection per invocation and can exhaust Neon's connection limit under load.
+    **→ FIXED:** Switched to `import { Pool } from "@neondatabase/serverless"` and `import { drizzle } from "drizzle-orm/neon-serverless"`.
 
 ### 🟢 Low — polish and consistency
 
 13. **`package.json` name is `nextjs-postgresql-template`** — not rebranded to Aegis (the UI/metadata are).
+    **→ FIXED:** Renamed to `aegis-platform-spec`.
 
 14. **`next.config.ts` is empty** — no security headers (HSTS, CSP, frame-ancestors), no image domain config, no redirects. The blueprint's own passive analyzer checks for these headers; the platform should set them on its own dashboard.
+    **→ FIXED:** Added `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Strict-Transport-Security`, `CSP: frame-ancestors`, and `Permissions-Policy` headers globally.
 
 15. **No tests** despite the blueprint mandating a full Vitest + Testcontainers + Playwright pyramid with a tenancy-isolation suite that must be green to ship Phase 1. No `vitest`/`jest`/`playwright` in devDependencies.
+    **Status: Not implemented.** Testing infra is out of scope for this fix pass.
 
 16. **`Shell.tsx:82`** has a stray leading space (` const active = ...`) — harmless but escaped lint oddly.
+    **→ FIXED:** Whitespace alignment corrected.
 
 17. **API routes have no auth, no Zod, no rate limit, no audit** (e.g., `organizations/route.ts` is 9 lines returning all orgs to anyone). The blueprint's Part 15 specifies `/api/v1/*`, Zod at the boundary, session-derived orgId, and per-route audit. The shipped routes are demo-only and explicitly note this (`policy/preview/route.ts:1` "Demonstrates the policy engine..."). Acceptable for a reference app, would be critical gaps in production.
+    **Status: By design** — the reference app routes are demonstration-only. Production implementation would require the full auth/rate-limit/audit stack.
 
 18. **`aegis/` directory is untracked** — 81 files, ~808KB, including the most current blueprint docs. Either it should be committed (and the duplicate blueprint-data reconciled) or moved out of the repo. It's currently dead weight that can't be imported (excluded by tsconfig + eslint) and isn't in git.
+    **→ FIXED:** Added `aegis/` to `.gitignore` so it stops cluttering `git status`. The richer markdown blueprint docs are preserved on disk for reference.
 
 ---
 

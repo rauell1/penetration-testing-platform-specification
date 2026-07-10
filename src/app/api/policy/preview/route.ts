@@ -25,6 +25,7 @@ export async function POST(req: Request) {
     maxConcurrentRequests: 2,
     allowActive: true,
     requireVerification: true,
+    pinnedHosts: [],
     ...body.scope,
   };
 
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
       activeScansEnabled: true,
       verified: true,
       hasValidAuthorizationArtifact: true,
+      requiresManualApproval: false,
     },
     scope,
     profile: {
@@ -44,6 +46,7 @@ export async function POST(req: Request) {
       id: "demo",
       plan: "team",
       settings: { allowActiveScans: true, requireMfaForActive: true },
+      emergencyStop: false,
     },
     actor: { id: "demo", role: "security_lead", mfaEnabled: true },
     usage: {
@@ -52,6 +55,8 @@ export async function POST(req: Request) {
       concurrentScansRunning: 0,
       concurrentScansLimit: 3,
     },
+    policyVersion: "2025.07.1",
+    scopeHash: undefined,
   };
 
   const decision = decidePolicy(

@@ -24,8 +24,8 @@ const SEVERITY_RANK: Record<Severity, number> = {
 
 const CONFIDENCE_RANK: Record<Confidence, number> = {
   tentative: 0,
-  firm: 1,
-  certain: 2,
+  likely: 1,
+  confirmed: 2,
 };
 
 /**
@@ -65,10 +65,16 @@ function normalizePath(path?: string): string {
   if (!path) return "";
   // Replace numeric IDs and UUIDs with placeholders so /users/42 and
   // /users/99 collapse into the same finding fingerprint.
-  return path
+  let p = path
     .split("?")[0]
     .replace(/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, "/:uuid")
     .replace(/\/\d+(?=\/|$)/g, "/:id");
+  // Collapse consecutive slashes and lowercase per the blueprint (Part 14).
+  p = p.replace(/\/{2,}/g, "/");
+  p = p.toLowerCase();
+  // Strip trailing slash (keep root "/" intact so "" and "/" don't both appear).
+  if (p.length > 1 && p.endsWith("/")) p = p.slice(0, -1);
+  return p;
 }
 
 /**

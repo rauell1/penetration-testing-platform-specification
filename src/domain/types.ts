@@ -5,7 +5,7 @@
 // ============================================================================
 
 export type Severity = "info" | "low" | "medium" | "high" | "critical";
-export type Confidence = "tentative" | "firm" | "certain";
+export type Confidence = "tentative" | "likely" | "confirmed";
 
 export type Role =
   | "owner"
@@ -93,6 +93,7 @@ export interface CompiledScope {
   maxConcurrentRequests: number;
   allowActive: boolean;
   requireVerification: boolean;
+  pinnedHosts: { host: string; ips: string[] }[]; // DNS-pinned hosts for anti-rebinding
 }
 
 export interface ScopeRule {
@@ -152,7 +153,7 @@ export interface PolicyDecisionInput {
 export interface PolicyDecision {
   allowed: boolean;
   reasons: string[]; // human-readable reasons (both allow and deny)
-  denyCodes: string[]; // stable codes for programmatic checks
+  denyCodes: PolicyDenyCode[]; // stable codes for programmatic checks
   effectiveScope: CompiledScope;
   quotaSnapshot: {
     monthlyScansUsed: number;
@@ -162,6 +163,31 @@ export interface PolicyDecision {
   };
   decidedAt: string; // ISO
 }
+
+/**
+ * Stable deny codes emitted by the policy engine. Mirrors the blueprint's
+ * PreflightErrorCode set (Part 17.4): platform/org kill switch, policy-version
+ * staleness, target verification, authorization, mode-in-scope, quota, and
+ * concurrency, plus scope drift detected at worker pull time.
+ */
+export type PolicyDenyCode =
+  | "ROLE_INSUFFICIENT"
+  | "TARGET_NOT_VERIFIED"
+  | "ORG_ACTIVE_DISABLED"
+  | "TARGET_ACTIVE_DISABLED"
+  | "SCOPE_ACTIVE_DISABLED"
+  | "MODE_NOT_IN_SCOPE"
+  | "MFA_REQUIRED"
+  | "ORG_KILL_SWITCH"
+  | "PLATFORM_KILL_SWITCH"
+  | "POLICY_VERSION_STALE"
+  | "SCOPE_DRIFT"
+  | "QUOTA_MONTHLY_EXCEEDED"
+  | "QUOTA_CONCURRENT_EXCEEDED"
+  | "SCOPE_EMPTY";
+
+/** Current policy engine version; workers reject claims with a stale version. */
+export const POLICY_VERSION = "2025.07.1";
 
 // ---------------------------------------------------------------------------
 // Queue payloads
