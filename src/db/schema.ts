@@ -460,9 +460,9 @@ export const scanRuns = pgTable(
     profileSnapshot: jsonb("profile_snapshot").notNull(),
     policyDecision: jsonb("policy_decision").notNull(),
     // SHA-256 of the compiled scope. Workers re-verify and abort on scope drift.
-    scopeHash: text("scope_hash").notNull(),
+    scopeHash: text("scope_hash").notNull().default(""),
     // Policy-engine version that authorized this run; stale runs are rejected.
-    policyVersion: text("policy_version").notNull(),
+    policyVersion: text("policy_version").notNull().default(""),
     progress: integer("progress").notNull().default(0), // 0..100
     startedAt: timestamp("started_at", { withTimezone: true }),
     finishedAt: timestamp("finished_at", { withTimezone: true }),
