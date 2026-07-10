@@ -272,7 +272,7 @@ export default function AegisPortal() {
                 {SAFETY_RULES.map((rule) => {
                   const Icon = ICONS[rule.icon] ?? ShieldCheck;
                   return (
-                    <div key={rule.id} className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 space-y-2 hover:border-zinc-750 transition">
+                    <div key={rule.id} className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 space-y-2 hover:border-zinc-700 transition">
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-500/10 ring-1 ring-emerald-500/30">
                           <Icon className="h-4 w-4 text-emerald-400" />
@@ -346,7 +346,7 @@ export default function AegisPortal() {
                       </div>
                       <div className="flex items-start gap-1.5 text-xs pt-1">
                         <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400" />
-                        <p className="text-zinc-350">{ac.mitigation}</p>
+                        <p className="text-zinc-300">{ac.mitigation}</p>
                       </div>
                     </div>
                   );
@@ -485,7 +485,7 @@ export default function AegisPortal() {
                         </div>
                         <div>
                           <div className="mb-1 flex items-center gap-1.5 text-[9px] uppercase tracking-wide text-zinc-500 font-bold">
-                            <XCircle className="h-3 w-3 text-zinc-650" /> Deferred
+                            <XCircle className="h-3 w-3 text-zinc-500" /> Deferred
                           </div>
                           <p className="leading-relaxed text-zinc-500">{phase.defers}</p>
                         </div>
@@ -605,7 +605,7 @@ function StagesFilter() {
   return (
     <div className="space-y-4">
       {/* Custom Tabs List */}
-      <div className="flex flex-wrap gap-1 p-1 bg-zinc-900 border border-zinc-850 rounded-lg max-w-lg">
+      <div className="flex flex-wrap gap-1 p-1 bg-zinc-900 border border-zinc-800 rounded-lg max-w-lg">
         {["all", "control", "crawl", "passive", "active", "normalize"].map((t) => (
           <button
             key={t}
@@ -680,7 +680,7 @@ function SchemaAccordion() {
   };
 
   return (
-    <div className="border border-zinc-800 bg-zinc-900/10 rounded-xl divide-y divide-zinc-850">
+    <div className="border border-zinc-800 bg-zinc-900/10 rounded-xl divide-y divide-zinc-800">
       {SCHEMA_TABLES.map((t) => {
         const isOpen = openTable === t.name;
         return (
@@ -691,7 +691,7 @@ function SchemaAccordion() {
             >
               <div className="flex items-center gap-3">
                 <Database className="h-4 w-4 text-emerald-400" />
-                <span className="font-mono text-xs font-semibold text-zinc-150">{t.name}</span>
+                <span className="font-mono text-xs font-semibold text-zinc-100">{t.name}</span>
                 <span className="rounded-md border border-zinc-800 bg-zinc-900/50 px-1.5 py-0.5 text-[8px] uppercase tracking-wider font-bold text-zinc-500">
                   {t.group}
                 </span>
