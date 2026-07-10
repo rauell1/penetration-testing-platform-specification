@@ -114,7 +114,7 @@ export async function getAuthContext(req: Request): Promise<AuthContext | null> 
         eq(organizations.id, payload.organizationId),
         isNull(users.deletedAt),
         isNull(organizations.deletedAt),
-        eq(organizations.emergencyStop, false) // Block if org emergency stop
+        eq(organizations.emergencyStop, false)
       )
     )
     .limit(1);
