@@ -32,6 +32,8 @@ export default async function DashboardPage() {
     );
   }
 
+  const emergencyStop = org.emergencyStop;
+
   const targetsList = await db
     .select()
     .from(targets)
@@ -69,6 +71,15 @@ export default async function DashboardPage() {
         description="Aggregated view of targets, recent scan activity, and finding severity distribution for the current organization."
         actions={
           <>
+            {emergencyStop && (
+              <span className="rounded-md bg-rose-500/10 border border-rose-500/30 text-rose-400 px-3 py-1.5 text-sm font-semibold flex items-center gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-400" />
+                </span>
+                EMERGENCY STOP ACTIVE
+              </span>
+            )}
             <Link
               href="/scans"
               className="rounded-md border border-zinc-700 hover:border-zinc-500 text-zinc-200 px-3.5 py-2 text-sm"
