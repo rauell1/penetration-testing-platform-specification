@@ -44,6 +44,12 @@ const NAV_SECTIONS: Array<{
       { href: "/spec/closing", label: "★ Closing checklists" },
     ],
   },
+  {
+    title: "Production (Goal B)",
+    items: [
+      { href: "/build-plan", label: "Build plan", badge: "next" },
+    ],
+  },
 ];
 
 export default function Shell({
