@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { SeverityChip, StateBadge } from "@/components/atoms";
-import { TableFilter, applyFilter } from "@/components/ui/TableFilter";
+import { TableFilter, applyFilter, type Chip } from "@/components/ui/TableFilter";
 import type { FindingState, Severity } from "@/domain/types";
 
 export interface FindingRow {
@@ -16,26 +16,31 @@ export interface FindingRow {
   lastSeenAt: Date;
 }
 
-const SEVERITIES: { value: Severity; label: string }[] = [
-  { value: "critical", label: "Critical" },
-  { value: "high", label: "High" },
-  { value: "medium", label: "Medium" },
-  { value: "low", label: "Low" },
-  { value: "info", label: "Info" },
+const SEVERITIES: Chip[] = [
+  { field: "severity", value: "critical", label: "Critical" },
+  { field: "severity", value: "high", label: "High" },
+  { field: "severity", value: "medium", label: "Medium" },
+  { field: "severity", value: "low", label: "Low" },
+  { field: "severity", value: "info", label: "Info" },
 ];
 
 export function FindingsTable({ rows }: { rows: FindingRow[] }) {
   const [query, setQuery] = useState("");
   const [chip, setChip] = useState<string | null>(null);
 
+  const activeChip = useMemo(
+    () => SEVERITIES.find((c) => c.value === chip) ?? null,
+    [chip]
+  );
+
   const filtered = useMemo(
     () =>
       applyFilter(
         rows as unknown as Record<string, unknown>[],
         query,
-        chip
+        activeChip
       ) as unknown as FindingRow[],
-    [rows, query, chip]
+    [rows, query, activeChip]
   );
 
   return (

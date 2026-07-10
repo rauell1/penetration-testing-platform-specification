@@ -1,20 +1,15 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/db";
-import { findings, organizations } from "@/db/schema";
+import { findings } from "@/db/schema";
 import Shell, { PageHeader, SectionCard } from "@/components/Shell";
+import { requireAuth } from "@/lib/server-auth";
 import { FindingsTable } from "./FindingsTable";
 import type { Severity } from "@/domain/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function FindingsPage() {
-  const [org] = await db.select().from(organizations).limit(1);
-  if (!org)
-    return (
-      <Shell activePath="/findings">
-        <PageHeader title="No org yet" />
-      </Shell>
-    );
+  const { organization: org } = await requireAuth();
   const rows = await db
     .select()
     .from(findings)

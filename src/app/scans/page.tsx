@@ -1,19 +1,14 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/db";
-import { organizations, scanRuns, targets } from "@/db/schema";
+import { scanRuns, targets } from "@/db/schema";
 import Shell, { PageHeader, SectionCard } from "@/components/Shell";
+import { requireAuth } from "@/lib/server-auth";
 import { ScansTable } from "./ScansTable";
 
 export const dynamic = "force-dynamic";
 
 export default async function ScansPage() {
-  const [org] = await db.select().from(organizations).limit(1);
-  if (!org)
-    return (
-      <Shell activePath="/scans">
-        <PageHeader title="No org yet" />
-      </Shell>
-    );
+  const { organization: org } = await requireAuth();
   const runs = await db
     .select()
     .from(scanRuns)

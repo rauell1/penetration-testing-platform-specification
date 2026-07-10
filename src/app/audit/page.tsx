@@ -1,19 +1,14 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/db";
-import { auditLogs, organizations } from "@/db/schema";
+import { auditLogs } from "@/db/schema";
 import Shell, { PageHeader, SectionCard } from "@/components/Shell";
+import { requireAuth } from "@/lib/server-auth";
 import { AuditTable } from "./AuditTable";
 
 export const dynamic = "force-dynamic";
 
 export default async function AuditPage() {
-  const [org] = await db.select().from(organizations).limit(1);
-  if (!org)
-    return (
-      <Shell activePath="/audit">
-        <PageHeader title="No org yet" />
-      </Shell>
-    );
+  const { organization: org } = await requireAuth();
   const rows = await db
     .select()
     .from(auditLogs)

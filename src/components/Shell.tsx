@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ReactNode } from "react";
+import { LogoutButton } from "./LogoutButton";
 
 const NAV_SECTIONS: Array<{
   title: string;
@@ -104,9 +105,12 @@ export default function Shell({
             </div>
           ))}
         </nav>
-        <div className="px-4 py-3 border-t border-zinc-800/80 text-[10px] text-zinc-500 leading-relaxed">
-          Passive by default · Active requires verified target + explicit
-          opt-in · Every request scope-checked in-worker.
+        <div className="px-4 py-3 border-t border-zinc-800/80 space-y-2">
+          <LogoutButton />
+          <div className="text-[10px] text-zinc-500 leading-relaxed">
+            Passive by default · Active requires verified target + explicit
+            opt-in · Every request scope-checked in-worker.
+          </div>
         </div>
       </aside>
       <main className="flex-1 min-w-0">

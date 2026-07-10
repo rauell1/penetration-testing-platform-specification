@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { RunStatusBadge } from "@/components/atoms";
-import { TableFilter, applyFilter } from "@/components/ui/TableFilter";
+import { TableFilter, applyFilter, type Chip } from "@/components/ui/TableFilter";
 import type { ScanRunStatus } from "@/domain/types";
 
 export interface ScanRow {
@@ -16,29 +16,34 @@ export interface ScanRow {
   finishedAt: Date | null;
 }
 
-const STATUSES: { value: ScanRunStatus; label: string }[] = [
-  { value: "queued", label: "Queued" },
-  { value: "crawling", label: "Crawling" },
-  { value: "passive", label: "Passive" },
-  { value: "active", label: "Active" },
-  { value: "completed", label: "Completed" },
-  { value: "failed", label: "Failed" },
-  { value: "cancelled", label: "Cancelled" },
-  { value: "killed", label: "Killed" },
+const STATUSES: Chip[] = [
+  { field: "status", value: "queued", label: "Queued" },
+  { field: "status", value: "crawling", label: "Crawling" },
+  { field: "status", value: "passive", label: "Passive" },
+  { field: "status", value: "active", label: "Active" },
+  { field: "status", value: "completed", label: "Completed" },
+  { field: "status", value: "failed", label: "Failed" },
+  { field: "status", value: "cancelled", label: "Cancelled" },
+  { field: "status", value: "killed", label: "Killed" },
 ];
 
 export function ScansTable({ rows }: { rows: ScanRow[] }) {
   const [query, setQuery] = useState("");
   const [chip, setChip] = useState<string | null>(null);
 
+  const activeChip = useMemo(
+    () => STATUSES.find((c) => c.value === chip) ?? null,
+    [chip]
+  );
+
   const filtered = useMemo(
     () =>
       applyFilter(
         rows as unknown as Record<string, unknown>[],
         query,
-        chip
+        activeChip
       ) as unknown as ScanRow[],
-    [rows, query, chip]
+    [rows, query, activeChip]
   );
 
   return (

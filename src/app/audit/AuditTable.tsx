@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Pill } from "@/components/atoms";
-import { TableFilter, applyFilter } from "@/components/ui/TableFilter";
+import { TableFilter, type Chip } from "@/components/ui/TableFilter";
 
 export interface AuditRow {
   id: string;
@@ -12,13 +12,13 @@ export interface AuditRow {
   createdAt: Date;
 }
 
-const ACTIONS = [
-  { value: "scan.", label: "Scan" },
-  { value: "scan.kill", label: "Kill" },
-  { value: "target.verify", label: "Target" },
-  { value: "finding.", label: "Finding" },
-  { value: "policy.", label: "Policy" },
-  { value: "auth.", label: "Auth" },
+const ACTIONS: Chip[] = [
+  { field: "action", value: "scan.", label: "Scan" },
+  { field: "action", value: "scan.kill", label: "Kill" },
+  { field: "action", value: "target.verify", label: "Target" },
+  { field: "action", value: "finding.", label: "Finding" },
+  { field: "action", value: "policy.", label: "Policy" },
+  { field: "action", value: "auth.", label: "Auth" },
 ];
 
 export function AuditTable({ rows }: { rows: AuditRow[] }) {

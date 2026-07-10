@@ -2,23 +2,17 @@ import { sql } from "drizzle-orm";
 import Link from "next/link";
 import { db } from "@/db";
 import {
-  organizations,
   targetVerifications,
   targets,
 } from "@/db/schema";
 import Shell, { PageHeader, SectionCard } from "@/components/Shell";
 import { Pill } from "@/components/atoms";
+import { requireAuth } from "@/lib/server-auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function TargetsPage() {
-  const [org] = await db.select().from(organizations).limit(1);
-  if (!org)
-    return (
-      <Shell activePath="/targets">
-        <PageHeader title="No org yet" />
-      </Shell>
-    );
+  const { organization: org } = await requireAuth();
 
   const rows = await db
     .select()

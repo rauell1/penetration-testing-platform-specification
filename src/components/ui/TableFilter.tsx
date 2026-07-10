@@ -2,6 +2,12 @@
 
 import { X } from "lucide-react";
 
+export interface Chip {
+  field: string;
+  value: string;
+  label: string;
+}
+
 export function TableFilter({
   placeholder = "Search…",
   chips = [],
@@ -13,7 +19,7 @@ export function TableFilter({
   onChipChange,
 }: {
   placeholder?: string;
-  chips?: { value: string; label: string }[];
+  chips?: Chip[];
   query: string;
   chip: string | null;
   total: number;
@@ -81,13 +87,13 @@ export function TableFilter({
 export function applyFilter<T extends Record<string, unknown>>(
   rows: T[],
   query: string,
-  chipKey: string | null
+  chip: Chip | null
 ): T[] {
   const q = query.toLowerCase().trim();
   return rows.filter((row) => {
     const matchesQuery = q ? JSON.stringify(row).toLowerCase().includes(q) : true;
-    const matchesChip = chipKey
-      ? String(row[chipKey] ?? "").toLowerCase().length > 0
+    const matchesChip = chip
+      ? String(row[chip.field] ?? "").toLowerCase() === chip.value.toLowerCase()
       : true;
     return matchesQuery && matchesChip;
   });

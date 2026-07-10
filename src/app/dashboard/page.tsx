@@ -3,34 +3,18 @@ import Link from "next/link";
 import { db } from "@/db";
 import {
   findings,
-  organizations,
   scanRuns,
   targets,
 } from "@/db/schema";
 import Shell, { PageHeader, SectionCard } from "@/components/Shell";
 import { Pill, RunStatusBadge, SeverityChip, Stat } from "@/components/atoms";
+import { requireAuth } from "@/lib/server-auth";
 import type { Severity, ScanRunStatus } from "@/domain/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [org] = await db.select().from(organizations).limit(1);
-  if (!org) {
-    return (
-      <Shell activePath="/dashboard">
-        <PageHeader
-          eyebrow="Dashboard"
-          title="No data yet"
-          description="Run the seed to populate the demo organization."
-        />
-        <div className="max-w-6xl mx-auto px-6 lg:px-10 py-10">
-          <SectionCard>
-            <pre>npx tsx src/db/seed.ts</pre>
-          </SectionCard>
-        </div>
-      </Shell>
-    );
-  }
+  const { organization: org } = await requireAuth();
 
   const emergencyStop = org.emergencyStop;
 
