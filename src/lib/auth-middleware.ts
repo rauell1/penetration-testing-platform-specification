@@ -79,27 +79,7 @@ export function withMiddleware(
         }
       }
 
-      // 3. Rate limiting
-      if (options.rateLimit) {
-        const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-        const orgId = authContext?.organization?.id ?? "anon";
-        const key = `ratelimit:${orgId}:${ip}`;
-        const { allowed, remaining, resetAt } = checkRateLimit(key, options.rateLimit.maxRequests, options.rateLimit.windowMs);
-        if (!allowed) {
-          return NextResponse.json(
-            { error: "Too Many Requests", code: "RATE_LIMITED", retryAfter: Math.ceil((resetAt - Date.now()) / 1000) },
-            { status: 429, headers: { "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)) } }
-          );
-        }
-        // Add rate limit headers
-        const response = await handler(Object.assign(req, { authContext: authContext ?? undefined }));
-        response.headers.set("X-RateLimit-Limit", String(options.rateLimit.maxRequests));
-        response.headers.set("X-RateLimit-Remaining", String(remaining));
-        response.headers.set("X-RateLimit-Reset", String(Math.ceil(resetAt / 1000)));
-        return response;
-      }
-
-      // 4. Body validation
+      // 3. Body validation (must run before handler)
       if (options.validateBody) {
         const body = await req.json().catch(() => ({}));
         const result = options.validateBody.safeParse(body);
@@ -112,7 +92,7 @@ export function withMiddleware(
         (req as AuthenticatedRequest).validatedBody = result.data;
       }
 
-      // 5. Query validation
+      // 4. Query validation (must run before handler)
       if (options.validateQuery) {
         const url = new URL(req.url);
         const params: Record<string, string> = {};
@@ -127,10 +107,33 @@ export function withMiddleware(
         (req as AuthenticatedRequest).validatedQuery = result.data;
       }
 
+      // 5. Rate limiting
+      let rateLimitResult: { remaining: number; resetAt: number } | null = null;
+      if (options.rateLimit) {
+        const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+        const orgId = authContext?.organization?.id ?? "anon";
+        const key = `ratelimit:${orgId}:${ip}`;
+        const { allowed, remaining, resetAt } = checkRateLimit(key, options.rateLimit.maxRequests, options.rateLimit.windowMs);
+        if (!allowed) {
+          return NextResponse.json(
+            { error: "Too Many Requests", code: "RATE_LIMITED", retryAfter: Math.ceil((resetAt - Date.now()) / 1000) },
+            { status: 429, headers: { "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)) } }
+          );
+        }
+        rateLimitResult = { remaining, resetAt };
+      }
+
       // 6. Call handler
       const response = await handler(Object.assign(req, { authContext: authContext ?? undefined }));
 
-      // 7. Audit logging (on success)
+      // 7. Rate limit headers on response
+      if (rateLimitResult && options.rateLimit) {
+        response.headers.set("X-RateLimit-Limit", String(options.rateLimit.maxRequests));
+        response.headers.set("X-RateLimit-Remaining", String(rateLimitResult.remaining));
+        response.headers.set("X-RateLimit-Reset", String(Math.ceil(rateLimitResult.resetAt / 1000)));
+      }
+
+      // 8. Audit logging (on success)
       if (authContext && options.auditAction && options.auditResourceType) {
         await auditLog({
           organizationId: authContext.organization.id,
