@@ -1,47 +1,45 @@
-import { cookies } from "next/headers";
+import { neonAuth, isNeonAuthEnabled } from "./auth/server";
+import { requireAuth as requireLegacyAuth } from "./server-auth-legacy";
 import { redirect } from "next/navigation";
-import { db } from "@/db";
-import { users, organizations, memberships } from "@/db/schema";
-import { eq, and, isNull } from "drizzle-orm";
-import { verifyToken, type AuthContext } from "./auth";
 
 /**
- * Reads the JWT access token from cookies, verifies it, and returns the
- * user + organization + membership.
- *
- * Call at the top of any server-rendered page that requires auth.
- * Redirects to /auth/login if the token is missing or invalid.
+ * Unified auth entry point for server components.
+ * Uses Neon Auth when configured; falls back to legacy JWT.
  */
-export async function requireAuth(): Promise<AuthContext> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("aegis_access")?.value;
-  if (!token) redirect("/auth/login");
+export async function requireAuth() {
+  if (isNeonAuthEnabled && neonAuth) {
+    const { data: session } = await neonAuth.getSession();
+    if (!session?.user) redirect("/auth/login");
 
-  const payload = await verifyToken(token);
-  if (!payload) redirect("/auth/login");
+    // Fetch org + membership from our schema (Neon Auth stores users in neon_auth schema)
+    // This is a minimal bridge until full migration.
+    const { db } = await import("@/db");
+    const { users, organizations, memberships } = await import("@/db/schema");
+    const { eq, and, isNull } = await import("drizzle-orm");
 
-  const [result] = await db
-    .select({
-      user: users,
-      organization: organizations,
-      membership: memberships,
-    })
-    .from(memberships)
-    .innerJoin(users, eq(users.id, memberships.userId))
-    .innerJoin(organizations, eq(organizations.id, memberships.organizationId))
-    .where(
-      and(
-        eq(memberships.id, payload.membershipId),
-        eq(users.id, payload.userId),
-        eq(organizations.id, payload.organizationId),
-        isNull(users.deletedAt),
-        isNull(organizations.deletedAt),
-        eq(organizations.emergencyStop, false)
+    const [result] = await db
+      .select({
+        user: users,
+        organization: organizations,
+        membership: memberships,
+      })
+      .from(memberships)
+      .innerJoin(users, eq(users.email, session.user.email))
+      .innerJoin(organizations, eq(organizations.id, memberships.organizationId))
+      .where(
+        and(
+          eq(users.email, session.user.email),
+          isNull(users.deletedAt),
+          isNull(organizations.deletedAt),
+          eq(organizations.emergencyStop, false)
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
 
-  if (!result) redirect("/auth/login");
+    if (!result) redirect("/auth/login");
+    return result;
+  }
 
-  return result;
+  // Legacy path
+  return requireLegacyAuth();
 }
