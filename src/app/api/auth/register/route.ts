@@ -132,6 +132,7 @@ export const POST = withMiddleware(
     return response;
   },
   {
+    requireAuth: false,
     validateBody: registerSchema,
     auditAction: "auth.register",
     auditResourceType: "auth",

@@ -30,6 +30,7 @@ interface AuthenticatedRequest extends NextRequest {
 }
 
 interface MiddlewareOptions {
+  requireAuth?: boolean;
   requiredRole?: keyof typeof import("./auth").ROLE_HIERARCHY;
   validateBody?: z.ZodSchema;
   validateQuery?: z.ZodSchema;
@@ -51,17 +52,22 @@ export function withMiddleware(
     let authContext: AuthContext | null = null;
 
     try {
-      // 1. Authentication
-      authContext = await getAuthContext(req);
-      if (!authContext) {
-        return NextResponse.json(
-          { error: "Unauthorized", code: "UNAUTHORIZED" },
-          { status: 401 }
-        );
+      // 1. Authentication (skip for public routes like login/register)
+      if (options.requireAuth !== false) {
+        authContext = await getAuthContext(req);
+        if (!authContext) {
+          return NextResponse.json(
+            { error: "Unauthorized", code: "UNAUTHORIZED" },
+            { status: 401 }
+          );
+        }
       }
 
       // 2. Role check
       if (options.requiredRole) {
+        if (!authContext) {
+          return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
+        }
         const { ROLE_HIERARCHY } = await import("./auth");
         const userLevel = ROLE_HIERARCHY[authContext.membership.role as keyof typeof ROLE_HIERARCHY] ?? 0;
         const requiredLevel = ROLE_HIERARCHY[options.requiredRole];
@@ -76,7 +82,8 @@ export function withMiddleware(
       // 3. Rate limiting
       if (options.rateLimit) {
         const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-        const key = `ratelimit:${authContext.organization.id}:${ip}`;
+        const orgId = authContext?.organization?.id ?? "anon";
+        const key = `ratelimit:${orgId}:${ip}`;
         const { allowed, remaining, resetAt } = checkRateLimit(key, options.rateLimit.maxRequests, options.rateLimit.windowMs);
         if (!allowed) {
           return NextResponse.json(
@@ -85,7 +92,7 @@ export function withMiddleware(
           );
         }
         // Add rate limit headers
-        const response = await handler(Object.assign(req, { authContext }));
+        const response = await handler(Object.assign(req, { authContext: authContext ?? undefined }));
         response.headers.set("X-RateLimit-Limit", String(options.rateLimit.maxRequests));
         response.headers.set("X-RateLimit-Remaining", String(remaining));
         response.headers.set("X-RateLimit-Reset", String(Math.ceil(resetAt / 1000)));
@@ -121,10 +128,10 @@ export function withMiddleware(
       }
 
       // 6. Call handler
-      const response = await handler(Object.assign(req, { authContext }));
+      const response = await handler(Object.assign(req, { authContext: authContext ?? undefined }));
 
       // 7. Audit logging (on success)
-      if (options.auditAction && options.auditResourceType) {
+      if (authContext && options.auditAction && options.auditResourceType) {
         await auditLog({
           organizationId: authContext.organization.id,
           userId: authContext.user.id,
