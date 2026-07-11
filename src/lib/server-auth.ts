@@ -1,5 +1,5 @@
 import { neonAuth, isNeonAuthEnabled } from "./auth/server";
-import { requireAuth as requireLegacyAuth } from "./server-auth-legacy";
+import { getAuthContext } from "./auth";
 import { redirect } from "next/navigation";
 
 /**
@@ -41,5 +41,7 @@ export async function requireAuth() {
   }
 
   // Legacy path
-  return requireLegacyAuth();
+  const ctx = await getAuthContext(new Request(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"));
+  if (!ctx) redirect("/auth/login");
+  return ctx;
 }
